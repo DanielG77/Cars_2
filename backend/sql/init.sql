@@ -30,7 +30,18 @@ CREATE TABLE IF NOT EXISTS vehiculos (
     observaciones TEXT
 );
 
+-- Table Incidencias (NUEVA: Para cumplir con el punto 3.3 Gestionar incidencias)
+CREATE TABLE IF NOT EXISTS incidencias (
+    id SERIAL PRIMARY KEY,
+    cliente_id INTEGER REFERENCES clientes(id) ON DELETE CASCADE,
+    titulo VARCHAR(100) NOT NULL,
+    descripcion TEXT,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    resuelta BOOLEAN DEFAULT FALSE
+);
+
 -- Indices for performance
 CREATE INDEX IF NOT EXISTS idx_clientes_dni ON clientes(dni);
 CREATE INDEX IF NOT EXISTS idx_vehiculos_matricula ON vehiculos(matricula);
 CREATE INDEX IF NOT EXISTS idx_vehiculos_cliente_id ON vehiculos(cliente_id);
+CREATE INDEX IF NOT EXISTS idx_incidencias_cliente_id ON incidencias(cliente_id);

@@ -1,0 +1,46 @@
+services:
+  # Base de datos PostgreSQL
+  db:
+    image: postgres:15-alpine
+    container_name: cartel_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/sql/init.sql:/docker-entrypoint-initdb.d/1-init.sql
+      - ./backend/sql/seed.sql:/docker-entrypoint-initdb.d/2-seed.sql
+
+  # API Backend
+  api:
+    build: ./backend
+    container_name: cartel_api
+    restart: always
+    environment:
+      DB_HOST: db
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_PORT: 5432
+      PORT: ${BACKEND_PORT}
+    ports:
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
+    depends_on:
+      - db
+
+  # App Frontend
+  web:
+    build: ./frontend
+    container_name: cartel_web
+    restart: always
+    ports:
+      - "${FRONTEND_PORT}:80"
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
