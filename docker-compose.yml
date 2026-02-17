@@ -42,5 +42,14 @@ services:
     depends_on:
       - api
 
+  # MailHog para pruebas de correo
+  mailhog:
+    image: mailhog/mailhog
+    container_name: cartel_mailhog
+    restart: always
+    ports:
+      - "1025:1025" # SMTP port
+      - "8025:8025" # UI port
+
 volumes:
   postgres_data:
