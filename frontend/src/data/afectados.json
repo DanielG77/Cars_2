@@ -1,0 +1,582 @@
+[
+    {
+        "marca": "Renault",
+        "modelo": "Clio",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Renault",
+        "modelo": "Clio",
+        "anio_matriculacion": 2021
+    },
+    {
+        "marca": "Renault",
+        "modelo": "Clio",
+        "anio_matriculacion": 2022
+    },
+    {
+        "marca": "Renault",
+        "modelo": "Megane",
+        "anio_matriculacion": 2019
+    },
+    {
+        "marca": "Renault",
+        "modelo": "Megane",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Renault",
+        "modelo": "Megane",
+        "anio_matriculacion": 2021
+    },
+    {
+        "marca": "Renault",
+        "modelo": "Captur",
+        "anio_matriculacion": 2021
+    },
+    {
+        "marca": "Renault",
+        "modelo": "Captur",
+        "anio_matriculacion": 2022
+    },
+    {
+        "marca": "Renault",
+        "modelo": "Kadjar",
+        "anio_matriculacion": 2018
+    },
+    {
+        "marca": "Renault",
+        "modelo": "Kadjar",
+        "anio_matriculacion": 2019
+    },
+    {
+        "marca": "Renault",
+        "modelo": "Talisman",
+        "anio_matriculacion": 2017
+    },
+    {
+        "marca": "Renault",
+        "modelo": "Talisman",
+        "anio_matriculacion": 2018
+    },
+    {
+        "marca": "Peugeot",
+        "modelo": "208",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Peugeot",
+        "modelo": "208",
+        "anio_matriculacion": 2021
+    },
+    {
+        "marca": "Peugeot",
+        "modelo": "208",
+        "anio_matriculacion": 2022
+    },
+    {
+        "marca": "Peugeot",
+        "modelo": "308",
+        "anio_matriculacion": 2018
+    },
+    {
+        "marca": "Peugeot",
+        "modelo": "308",
+        "anio_matriculacion": 2019
+    },
+    {
+        "marca": "Peugeot",
+        "modelo": "308",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Peugeot",
+        "modelo": "3008",
+        "anio_matriculacion": 2019
+    },
+    {
+        "marca": "Peugeot",
+        "modelo": "3008",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Peugeot",
+        "modelo": "5008",
+        "anio_matriculacion": 2021
+    },
+    {
+        "marca": "Peugeot",
+        "modelo": "5008",
+        "anio_matriculacion": 2022
+    },
+    {
+        "marca": "Peugeot",
+        "modelo": "Rifter",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Citroën",
+        "modelo": "C3",
+        "anio_matriculacion": 2019
+    },
+    {
+        "marca": "Citroën",
+        "modelo": "C3",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Citroën",
+        "modelo": "C3",
+        "anio_matriculacion": 2021
+    },
+    {
+        "marca": "Citroën",
+        "modelo": "C4",
+        "anio_matriculacion": 2018
+    },
+    {
+        "marca": "Citroën",
+        "modelo": "C4",
+        "anio_matriculacion": 2019
+    },
+    {
+        "marca": "Citroën",
+        "modelo": "C4 Cactus",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Citroën",
+        "modelo": "C4 Cactus",
+        "anio_matriculacion": 2021
+    },
+    {
+        "marca": "Citroën",
+        "modelo": "Berlingo",
+        "anio_matriculacion": 2022
+    },
+    {
+        "marca": "Citroën",
+        "modelo": "Berlingo",
+        "anio_matriculacion": 2023
+    },
+    {
+        "marca": "Volkswagen",
+        "modelo": "Golf",
+        "anio_matriculacion": 2018
+    },
+    {
+        "marca": "Volkswagen",
+        "modelo": "Golf",
+        "anio_matriculacion": 2019
+    },
+    {
+        "marca": "Volkswagen",
+        "modelo": "Golf",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Volkswagen",
+        "modelo": "Polo",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Volkswagen",
+        "modelo": "Polo",
+        "anio_matriculacion": 2021
+    },
+    {
+        "marca": "Volkswagen",
+        "modelo": "Tiguan",
+        "anio_matriculacion": 2019
+    },
+    {
+        "marca": "Volkswagen",
+        "modelo": "Tiguan",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Volkswagen",
+        "modelo": "Passat",
+        "anio_matriculacion": 2017
+    },
+    {
+        "marca": "Volkswagen",
+        "modelo": "Passat",
+        "anio_matriculacion": 2018
+    },
+    {
+        "marca": "Volkswagen",
+        "modelo": "Arteon",
+        "anio_matriculacion": 2021
+    },
+    {
+        "marca": "Seat",
+        "modelo": "Ibiza",
+        "anio_matriculacion": 2019
+    },
+    {
+        "marca": "Seat",
+        "modelo": "Ibiza",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Seat",
+        "modelo": "Ibiza",
+        "anio_matriculacion": 2021
+    },
+    {
+        "marca": "Seat",
+        "modelo": "León",
+        "anio_matriculacion": 2018
+    },
+    {
+        "marca": "Seat",
+        "modelo": "León",
+        "anio_matriculacion": 2019
+    },
+    {
+        "marca": "Seat",
+        "modelo": "León",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Seat",
+        "modelo": "Arona",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Seat",
+        "modelo": "Arona",
+        "anio_matriculacion": 2021
+    },
+    {
+        "marca": "Seat",
+        "modelo": "Ateca",
+        "anio_matriculacion": 2019
+    },
+    {
+        "marca": "Seat",
+        "modelo": "Ateca",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Ford",
+        "modelo": "Focus",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Ford",
+        "modelo": "Focus",
+        "anio_matriculacion": 2021
+    },
+    {
+        "marca": "Ford",
+        "modelo": "Fiesta",
+        "anio_matriculacion": 2019
+    },
+    {
+        "marca": "Ford",
+        "modelo": "Fiesta",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Ford",
+        "modelo": "Kuga",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Ford",
+        "modelo": "Kuga",
+        "anio_matriculacion": 2021
+    },
+    {
+        "marca": "Ford",
+        "modelo": "Mondeo",
+        "anio_matriculacion": 2018
+    },
+    {
+        "marca": "Ford",
+        "modelo": "Mondeo",
+        "anio_matriculacion": 2019
+    },
+    {
+        "marca": "Ford",
+        "modelo": "Puma",
+        "anio_matriculacion": 2021
+    },
+    {
+        "marca": "Ford",
+        "modelo": "Puma",
+        "anio_matriculacion": 2022
+    },
+    {
+        "marca": "Opel",
+        "modelo": "Corsa",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Opel",
+        "modelo": "Corsa",
+        "anio_matriculacion": 2021
+    },
+    {
+        "marca": "Opel",
+        "modelo": "Astra",
+        "anio_matriculacion": 2019
+    },
+    {
+        "marca": "Opel",
+        "modelo": "Astra",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Opel",
+        "modelo": "Grandland X",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Opel",
+        "modelo": "Grandland X",
+        "anio_matriculacion": 2021
+    },
+    {
+        "marca": "Opel",
+        "modelo": "Mokka",
+        "anio_matriculacion": 2021
+    },
+    {
+        "marca": "Opel",
+        "modelo": "Mokka",
+        "anio_matriculacion": 2022
+    },
+    {
+        "marca": "Toyota",
+        "modelo": "Corolla",
+        "anio_matriculacion": 2019
+    },
+    {
+        "marca": "Toyota",
+        "modelo": "Corolla",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Toyota",
+        "modelo": "Corolla",
+        "anio_matriculacion": 2021
+    },
+    {
+        "marca": "Toyota",
+        "modelo": "Yaris",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Toyota",
+        "modelo": "Yaris",
+        "anio_matriculacion": 2021
+    },
+    {
+        "marca": "Toyota",
+        "modelo": "RAV4",
+        "anio_matriculacion": 2019
+    },
+    {
+        "marca": "Toyota",
+        "modelo": "RAV4",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Toyota",
+        "modelo": "C-HR",
+        "anio_matriculacion": 2021
+    },
+    {
+        "marca": "Toyota",
+        "modelo": "C-HR",
+        "anio_matriculacion": 2022
+    },
+    {
+        "marca": "Nissan",
+        "modelo": "Qashqai",
+        "anio_matriculacion": 2018
+    },
+    {
+        "marca": "Nissan",
+        "modelo": "Qashqai",
+        "anio_matriculacion": 2019
+    },
+    {
+        "marca": "Nissan",
+        "modelo": "Qashqai",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Nissan",
+        "modelo": "Juke",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Nissan",
+        "modelo": "Juke",
+        "anio_matriculacion": 2021
+    },
+    {
+        "marca": "Nissan",
+        "modelo": "Micra",
+        "anio_matriculacion": 2019
+    },
+    {
+        "marca": "Nissan",
+        "modelo": "Micra",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Hyundai",
+        "modelo": "i30",
+        "anio_matriculacion": 2019
+    },
+    {
+        "marca": "Hyundai",
+        "modelo": "i30",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Hyundai",
+        "modelo": "Tucson",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Hyundai",
+        "modelo": "Tucson",
+        "anio_matriculacion": 2021
+    },
+    {
+        "marca": "Hyundai",
+        "modelo": "Kona",
+        "anio_matriculacion": 2021
+    },
+    {
+        "marca": "Hyundai",
+        "modelo": "Kona",
+        "anio_matriculacion": 2022
+    },
+    {
+        "marca": "Kia",
+        "modelo": "Ceed",
+        "anio_matriculacion": 2019
+    },
+    {
+        "marca": "Kia",
+        "modelo": "Ceed",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Kia",
+        "modelo": "Sportage",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Kia",
+        "modelo": "Sportage",
+        "anio_matriculacion": 2021
+    },
+    {
+        "marca": "Kia",
+        "modelo": "Niro",
+        "anio_matriculacion": 2021
+    },
+    {
+        "marca": "Kia",
+        "modelo": "Niro",
+        "anio_matriculacion": 2022
+    },
+    {
+        "marca": "Mercedes-Benz",
+        "modelo": "Clase A",
+        "anio_matriculacion": 2019
+    },
+    {
+        "marca": "Mercedes-Benz",
+        "modelo": "Clase A",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Mercedes-Benz",
+        "modelo": "Clase C",
+        "anio_matriculacion": 2018
+    },
+    {
+        "marca": "Mercedes-Benz",
+        "modelo": "Clase C",
+        "anio_matriculacion": 2019
+    },
+    {
+        "marca": "Mercedes-Benz",
+        "modelo": "GLA",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Mercedes-Benz",
+        "modelo": "GLA",
+        "anio_matriculacion": 2021
+    },
+    {
+        "marca": "BMW",
+        "modelo": "Serie 1",
+        "anio_matriculacion": 2019
+    },
+    {
+        "marca": "BMW",
+        "modelo": "Serie 1",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "BMW",
+        "modelo": "Serie 3",
+        "anio_matriculacion": 2018
+    },
+    {
+        "marca": "BMW",
+        "modelo": "Serie 3",
+        "anio_matriculacion": 2019
+    },
+    {
+        "marca": "BMW",
+        "modelo": "X1",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "BMW",
+        "modelo": "X1",
+        "anio_matriculacion": 2021
+    },
+    {
+        "marca": "Audi",
+        "modelo": "A3",
+        "anio_matriculacion": 2019
+    },
+    {
+        "marca": "Audi",
+        "modelo": "A3",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Audi",
+        "modelo": "A4",
+        "anio_matriculacion": 2018
+    },
+    {
+        "marca": "Audi",
+        "modelo": "A4",
+        "anio_matriculacion": 2019
+    },
+    {
+        "marca": "Audi",
+        "modelo": "Q3",
+        "anio_matriculacion": 2020
+    },
+    {
+        "marca": "Audi",
+        "modelo": "Q3",
+        "anio_matriculacion": 2021
+    }
+]

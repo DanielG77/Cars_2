@@ -58,6 +58,8 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
+// Importamos la lista de vehículos afectados (asegúrate de que la ruta sea correcta)
+import vehiculosAfectados from '@/data/afectados.json'
 
 const router = useRouter()
 
@@ -77,54 +79,102 @@ const vehiculo = ref({
 
 const cargando = ref(false)
 
+// Función para normalizar texto (quita acentos y pasa a minúsculas)
+const normalizarTexto = (texto) => {
+  if (!texto) return ''
+  return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
+}
+
+// Comprobación local contra el JSON
+const comprobarVehiculo = (datos) => {
+  const marcaNorm = normalizarTexto(datos.marca)
+  const modeloNorm = normalizarTexto(datos.modelo)
+  const anio = datos.anio_matriculacion // puede ser null
+
+  // Si falta marca o modelo, no puede estar afectado (aunque son obligatorios)
+  if (!marcaNorm || !modeloNorm) return false
+
+  return vehiculosAfectados.some(v => 
+    normalizarTexto(v.marca) === marcaNorm &&
+    normalizarTexto(v.modelo) === modeloNorm &&
+    v.anio_matriculacion === anio
+  )
+}
+
+// Guardar vehículo en localStorage (simula el guardado para usuarios logueados)
+const guardarVehiculoLocal = (datos, afectado) => {
+  try {
+    // Recuperar vehículos existentes o inicializar array vacío
+    const existentes = JSON.parse(localStorage.getItem('vehiculosRegistrados') || '[]')
+    // Agregar nuevo vehículo con fecha y resultado
+    existentes.push({
+      ...datos,
+      afectado,
+      fechaRegistro: new Date().toISOString()
+    })
+    localStorage.setItem('vehiculosRegistrados', JSON.stringify(existentes))
+    return true
+  } catch (error) {
+    console.error('Error al guardar en localStorage:', error)
+    return false
+  }
+}
+
 // Volver al home sin guardar
 const volverAlHome = () => {
   vehiculo.value = { matricula: '', marca: '', modelo: '', anio_matriculacion: null, color: '', puertas: null, observaciones: '' }
   mostrarHome.value = true
 }
 
-// Simulación de comprobación en el backend
-const comprobarVehiculo = (datos) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      // Regla ficticia: está afectado si la matrícula contiene la letra 'A' (mayúscula o minúscula)
-      const afectado = /a/i.test(datos.matricula)
-      resolve(afectado)
-    }, 1500)
-  })
-}
-
 // Envío del formulario
 const handleSubmit = async () => {
   cargando.value = true
   try {
-    const afectado = await comprobarVehiculo(vehiculo.value)
+    // Comprobación síncrona (simulamos una pequeña pausa para mejorar UX)
+    await new Promise(resolve => setTimeout(resolve, 500))
+    const afectado = comprobarVehiculo(vehiculo.value)
 
-    if (afectado) {
-      // Guardar datos del vehículo en localStorage para vincular después del registro
-      localStorage.setItem('vehiculoPendiente', JSON.stringify(vehiculo.value))
+    const usuarioRaw = localStorage.getItem('usuario')
+    const logged = usuarioRaw ? JSON.parse(usuarioRaw) : null
 
-      // Mostrar alerta y redirigir al login
-      await Swal.fire({
-        icon: 'info',
-        title: 'Vehículo afectado',
-        text: 'Su vehículo está dentro de los afectados. Disculpe las molestias, le pediremos que registre un usuario para poder llevar a cabo la gestión.',
-        confirmButtonColor: '#3085d6'
-      })
-
-      router.push('/login')
-    } else {
-      // No afectado
-      await Swal.fire({
-        icon: 'success',
-        title: 'Vehículo no afectado',
-        text: 'Su vehículo no está en la lista de remesas. No necesita realizar ningún trámite.',
-        confirmButtonColor: '#3085d6'
-      })
-      // Opcional: limpiar formulario y volver al home
+    if (logged) {
+      // Usuario logueado: guardamos en localStorage (simulando backend)
+      const guardado = guardarVehiculoLocal(vehiculo.value, afectado)
+      if (guardado) {
+        await Swal.fire({ 
+          icon: 'success', 
+          title: 'Vehículo guardado', 
+          text: 'Su vehículo ha sido registrado en su cuenta.', 
+          confirmButtonColor: '#3085d6' 
+        })
+      } else {
+        await Swal.fire('Error', 'No se pudo guardar el vehículo', 'error')
+      }
       volverAlHome()
+    } else {
+      if (afectado) {
+        // Guardar datos del vehículo en localStorage para vincular después del registro
+        localStorage.setItem('vehiculoPendiente', JSON.stringify(vehiculo.value))
+
+        await Swal.fire({
+          icon: 'info',
+          title: 'Vehículo afectado',
+          text: 'Su vehículo está dentro de los afectados. Disculpe las molestias, le pediremos que registre un usuario para poder llevar a cabo la gestión.',
+          confirmButtonColor: '#3085d6'
+        })
+        router.push('/login')
+      } else {
+        await Swal.fire({
+          icon: 'success',
+          title: 'Vehículo no afectado',
+          text: 'Su vehículo no está en la lista de remesas. No necesita realizar ningún trámite.',
+          confirmButtonColor: '#3085d6'
+        })
+        volverAlHome()
+      }
     }
   } catch (error) {
+    console.error(error)
     Swal.fire('Error', 'Hubo un problema al comprobar el vehículo', 'error')
   } finally {
     cargando.value = false
