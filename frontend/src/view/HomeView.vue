@@ -2,10 +2,32 @@
   <div class="container">
     <!-- PANTALLA HOME -->
     <div v-if="mostrarHome" class="home-section">
-      <div class="hero">
-        <img src="https://via.placeholder.com/1200x600/0077be/ffffff?text=Coche+Azul" alt="Coche" class="hero-image">
-        <h1 class="title">Comprobación de remesas</h1>
-        <button @click="mostrarHome = false" class="btn-primary">Realizar comprobación</button>
+      <!-- Grid de marcas -->
+      <div v-if="!selectedBrand" class="brand-selection">
+        <h1 class="title">Selecciona tu marca</h1>
+        <div class="brand-grid">
+          <div v-for="(path, brand) in logos" :key="brand" class="brand-card" @click="selectBrand(brand)">
+            <img :src="getLogoUrl(brand)" :alt="brand" class="brand-logo">
+            <span class="brand-name">{{ brand }}</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Detalle de la marca seleccionada -->
+      <div v-else class="brand-details">
+        <div class="details-card">
+          <button class="btn-back" @click="clearSelection">← Volver</button>
+          <img :src="getLogoUrl(selectedBrand)" :alt="selectedBrand" class="details-logo">
+          <h2>{{ selectedBrand }}</h2>
+          <div class="affected-info">
+            <h3>Años afectados:</h3>
+            <div v-if="affectedYears.length" class="years-grid">
+              <span v-for="year in affectedYears" :key="year" class="year-badge">{{ year }}</span>
+            </div>
+            <p v-else>No se han encontrado modelos afectados para esta marca.</p>
+          </div>
+          <button @click="iniciarComprobacion" class="btn-primary">Comprobar mi vehículo</button>
+        </div>
       </div>
     </div>
 
@@ -60,8 +82,34 @@ import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
 // Importamos la lista de vehículos afectados (asegúrate de que la ruta sea correcta)
 import vehiculosAfectados from '@/data/afectados.json'
+import logos from '@/data/logos.json'
 
 const router = useRouter()
+
+// Estado de la marca seleccionada
+const selectedBrand = ref(null)
+const affectedYears = ref([])
+
+const selectBrand = (brand) => {
+  selectedBrand.value = brand
+  const info = vehiculosAfectados.find(v => v.marca.toLowerCase() === brand.toLowerCase())
+  affectedYears.value = info ? info.anios : []
+}
+
+const clearSelection = () => {
+  selectedBrand.value = null
+  affectedYears.value = []
+}
+
+const getLogoUrl = (brand) => {
+  const path = logos[brand]
+  return `/${path}`
+}
+
+const iniciarComprobacion = () => {
+  vehiculo.value.marca = selectedBrand.value
+  mostrarHome.value = false
+}
 
 // Estado de la vista
 const mostrarHome = ref(true)
@@ -194,6 +242,118 @@ const handleSubmit = async () => {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
+  padding: 2rem 0;
+}
+
+.brand-selection {
+  width: 100%;
+  max-width: 1200px;
+  padding: 2rem;
+  text-align: center;
+}
+
+.brand-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 2rem;
+}
+
+.brand-card {
+  flex: 0 1 180px;
+  background: white;
+  border-radius: 15px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.brand-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 119, 190, 0.15);
+}
+
+.brand-logo {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  margin-bottom: 1rem;
+}
+
+.brand-name {
+  font-weight: 600;
+  color: #003b6f;
+}
+
+.brand-details {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 2rem;
+}
+
+.details-card {
+  background: white;
+  border-radius: 25px;
+  padding: 2.5rem;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+}
+
+.btn-back {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: none;
+  border: none;
+  color: #0077be;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.details-logo {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  margin-bottom: 1.5rem;
+}
+
+.affected-info {
+  margin: 2rem 0;
+  text-align: left;
+}
+
+.affected-info h3 {
+  color: #003b6f;
+  margin-bottom: 1rem;
+}
+
+.years-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.year-badge {
+  background: #e6f0fa;
+  color: #0077be;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
 }
 
 .hero {
