@@ -12,7 +12,6 @@
       </div>
       <div v-else class="vehiculos-grid">
         <div v-for="v in vehiculos" :key="v.id" class="vehiculo-card">
-          <!-- Mostramos los campos con valores por defecto si no existen -->
           <div class="campo"><strong>Matrícula:</strong> {{ v.matricula || '—' }}</div>
           <div class="campo"><strong>Marca:</strong> {{ v.marca || '—' }}</div>
           <div class="campo"><strong>Modelo:</strong> {{ v.modelo || '—' }}</div>
@@ -20,8 +19,6 @@
           <div class="campo"><strong>Color:</strong> {{ v.color || '—' }}</div>
           <div class="campo"><strong>Puertas:</strong> {{ v.puertas || '—' }}</div>
           <div class="campo"><strong>Observaciones:</strong> {{ v.observaciones || '—' }}</div>
-          <!-- Opcional: mostrar el objeto completo para depuración (comentar en producción) -->
-          <!-- <pre class="debug">{{ v }}</pre> -->
         </div>
       </div>
 
@@ -30,7 +27,10 @@
         <li class="mensaje-vacio">No hay incidencias registradas.</li>
       </ul>
       <ul v-else>
-        <li v-for="i in incidencias" :key="i.id">{{ i.titulo }} — {{ i.descripcion || '' }}</li>
+        <li v-for="i in incidencias" :key="i.id">
+          {{ i.titulo }} — {{ i.descripcion || '' }}
+          <span v-if="i.resuelta" class="resuelta">(Resuelta)</span>
+        </li>
       </ul>
 
       <button class="btn-primary" @click="logout">Cerrar sesión</button>
@@ -62,6 +62,47 @@ const logout = () => {
   router.push('/')
 }
 
+// Función para normalizar la respuesta de vehículos a un array
+const normalizarVehiculos = (data) => {
+  console.log('Normalizando:', data)
+
+  // Si ya es un array, lo devolvemos directamente
+  if (Array.isArray(data)) {
+    return data
+  }
+
+  // Si es un objeto no nulo
+  if (data && typeof data === 'object') {
+    // Caso 1: El objeto tiene una propiedad que es un array (ej. { vehiculos: [...] })
+    const posiblesPropiedadesArray = ['vehiculos', 'data', 'results', 'items', 'lista']
+    for (const prop of posiblesPropiedadesArray) {
+      if (Array.isArray(data[prop])) {
+        console.log(`Encontrada propiedad array: ${prop}`)
+        return data[prop]
+      }
+    }
+
+    // Caso 2: El objeto parece ser un vehículo único (tiene campos típicos)
+    const tieneCamposVehiculo = data.id && (data.matricula || data.marca || data.modelo)
+    if (tieneCamposVehiculo) {
+      console.log('Objeto detectado como vehículo único, se envuelve en array')
+      return [data]
+    }
+
+    // Caso 3: Objeto vacío o sin estructura reconocida -> array vacío
+    if (Object.keys(data).length === 0) {
+      return []
+    }
+
+    // Si no se pudo determinar, devolvemos array vacío y mostramos advertencia
+    console.warn('No se pudo interpretar la respuesta:', data)
+    return []
+  }
+
+  // Cualquier otro tipo (null, undefined, número, string) -> array vacío
+  return []
+}
+
 onMounted(async () => {
   loadUsuario()
   if (!usuario.value) {
@@ -73,45 +114,16 @@ onMounted(async () => {
 
     // Obtener vehículos
     const responseVehiculos = await api.get(`/vehiculos/${id}`)
-    console.log('Respuesta completa de vehículos:', responseVehiculos)
+    console.log('Respuesta cruda de vehículos:', responseVehiculos)
+    vehiculos.value = normalizarVehiculos(responseVehiculos)
+    console.log('Vehículos normalizados:', vehiculos.value)
 
-    // Normalizar la respuesta para obtener un array
-    if (Array.isArray(responseVehiculos)) {
-      vehiculos.value = responseVehiculos
-    } else if (responseVehiculos && typeof responseVehiculos === 'object') {
-      // Posibles estructuras: { data: [...], vehiculos: [...], results: [...], etc.
-      // Intentamos encontrar una propiedad que sea un array
-      const possibleArrayProps = ['vehiculos', 'data', 'results', 'items', 'lista']
-      let foundArray = null
-      for (const prop of possibleArrayProps) {
-        if (Array.isArray(responseVehiculos[prop])) {
-          foundArray = responseVehiculos[prop]
-          break
-        }
-      }
-      if (foundArray) {
-        vehiculos.value = foundArray
-      } else {
-        // Si no encontramos un array, pero el objeto no está vacío, lo envolvemos en un array
-        // (por si acaso la respuesta es un único vehículo como objeto)
-        if (Object.keys(responseVehiculos).length > 0 && responseVehiculos.id) {
-          vehiculos.value = [responseVehiculos]
-        } else {
-          vehiculos.value = []
-        }
-      }
-    } else {
-      vehiculos.value = []
-    }
-
-    console.log('Vehículos procesados:', vehiculos.value)
-
-    // Obtener incidencias (suponiendo que la respuesta es un array)
+    // Obtener incidencias (asumimos que es un array directamente)
     const responseIncidencias = await api.get(`/incidencias/cliente/${id}`)
     incidencias.value = Array.isArray(responseIncidencias) ? responseIncidencias : []
+    console.log('Incidencias:', incidencias.value)
   } catch (e) {
     console.error('Error al cargar datos:', e)
-    // Podrías mostrar un mensaje al usuario con un ref adicional
   }
 })
 </script>
@@ -199,12 +211,9 @@ ul li {
   border-radius: 8px;
 }
 
-.debug {
-  font-size: 0.7rem;
-  background: #eee;
-  padding: 0.5rem;
-  border-radius: 4px;
-  overflow-x: auto;
-  margin-top: 0.5rem;
+.resuelta {
+  color: green;
+  font-weight: bold;
+  margin-left: 0.5rem;
 }
 </style>
