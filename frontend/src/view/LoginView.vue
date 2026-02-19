@@ -1,32 +1,28 @@
 <template>
   <div class="login-container">
     <div class="login-card">
-        <h2>{{ modoRegistro ? 'Registro' : 'Iniciar sesión' }}</h2>
-        <form @submit.prevent="handleSubmit">
-          <div v-if="modoRegistro" class="form-group">
-            <label>DNI</label>
-            <input v-model="usuario.dni" required placeholder="Ej: 12345678A">
-          </div>
-          <div v-if="modoRegistro" class="form-group">
-            <label>Nombre</label>
-            <input v-model="usuario.nombre" required>
-          </div>
-          <div v-if="modoRegistro" class="form-group">
-            <label>Apellidos</label>
-            <input v-model="usuario.apellidos" required>
-          </div>
-          <div class="form-group">
-            <label>Email</label>
-            <input type="email" v-model="usuario.email" required>
-          </div>
-          <div class="form-group">
-            <label>Contraseña (opcional)</label>
-            <input type="password" v-model="usuario.password">
-          </div>
-          <button type="submit" class="btn-primary" :disabled="cargando">
-            {{ cargando ? 'Procesando...' : (modoRegistro ? 'Registrarse' : 'Acceder') }}
-          </button>
-        </form>
+      <h2>{{ modoRegistro ? 'Registro' : 'Iniciar sesión' }}</h2>
+      <form @submit.prevent="handleSubmit">
+        <div v-if="modoRegistro" class="form-group">
+          <label>DNI *</label>
+          <input v-model="usuario.dni" required placeholder="Ej: 12345678A">
+        </div>
+        <div v-if="modoRegistro" class="form-group">
+          <label>Nombre *</label>
+          <input v-model="usuario.nombre" required>
+        </div>
+        <div v-if="modoRegistro" class="form-group">
+          <label>Apellidos *</label>
+          <input v-model="usuario.apellidos" required>
+        </div>
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" v-model="usuario.email" required>
+        </div>
+        <button type="submit" class="btn-primary" :disabled="cargando">
+          {{ cargando ? 'Procesando...' : (modoRegistro ? 'Registrarse' : 'Acceder') }}
+        </button>
+      </form>
       <p class="toggle-modo">
         {{ modoRegistro ? '¿Ya tienes cuenta?' : '¿No tienes cuenta?' }}
         <a href="#" @click.prevent="modoRegistro = !modoRegistro">
@@ -51,8 +47,7 @@ const usuario = ref({
   dni: '',
   nombre: '',
   apellidos: '',
-  email: '',
-  password: ''
+  email: ''
 })
 
 // Al montar, comprobamos si hay vehículo pendiente
@@ -65,7 +60,6 @@ onMounted(() => {
       text: 'Por favor, regístrese para vincular su vehículo afectado.',
       confirmButtonColor: '#3085d6'
     })
-    // Forzamos modo registro si hay vehículo pendiente
     modoRegistro.value = true
   }
 })
@@ -74,7 +68,7 @@ const handleSubmit = async () => {
   cargando.value = true
   try {
     if (modoRegistro.value) {
-      // Build payload for cliente
+      // Registro: POST /clientes
       const payload = {
         dni: usuario.value.dni,
         nombre: usuario.value.nombre,
@@ -82,43 +76,85 @@ const handleSubmit = async () => {
         email: usuario.value.email
       }
       const created = await api.post('/clientes', payload)
-      // Save usuario locally
+
+      // Guardar usuario en localStorage
       localStorage.setItem('usuario', JSON.stringify(created))
 
+      // Vincular vehículo pendiente si existe
       const vehiculoPendiente = localStorage.getItem('vehiculoPendiente')
       if (vehiculoPendiente) {
         const veh = JSON.parse(vehiculoPendiente)
-        // attach cliente_id and post to backend
         try {
           await api.post('/vehiculos', { ...veh, cliente_id: created.id })
           localStorage.removeItem('vehiculoPendiente')
-          await Swal.fire({ icon: 'success', title: 'Registro completado', text: 'Su vehículo ha sido vinculado a su cuenta.', confirmButtonColor: '#3085d6' })
+          await Swal.fire({
+            icon: 'success',
+            title: 'Registro completado',
+            text: 'Su vehículo ha sido vinculado a su cuenta.',
+            confirmButtonColor: '#3085d6'
+          })
           router.push('/')
         } catch (e) {
           console.error(e)
           await Swal.fire('Error', 'No se pudo vincular el vehículo', 'error')
         }
       } else {
-        await Swal.fire({ icon: 'success', title: 'Registro completado', text: 'Bienvenido. Ya puede gestionar su remesa.', confirmButtonColor: '#3085d6' })
+        await Swal.fire({
+          icon: 'success',
+          title: 'Registro completado',
+          text: 'Bienvenido. Ya puede gestionar su remesa.',
+          confirmButtonColor: '#3085d6'
+        })
+        // Opcional: pasar a modo login o redirigir
         modoRegistro.value = false
-        usuario.value = { dni: '', nombre: '', apellidos: '', email: '', password: '' }
+        usuario.value = { dni: '', nombre: '', apellidos: '', email: '' }
       }
     } else {
-      // Login: lookup cliente by email
-      const list = await api.get('/clientes')
-      const found = list.find(c => c.email && c.email.toLowerCase() === (usuario.value.email || '').toLowerCase())
-      if (found) {
-        localStorage.setItem('usuario', JSON.stringify(found))
-        await Swal.fire({ icon: 'success', title: 'Bienvenido', text: 'Ha iniciado sesión correctamente.', confirmButtonColor: '#3085d6' })
+      // Login: GET /clientes/email/:email
+      try {
+        const cliente = await api.get(`/clientes/email/${encodeURIComponent(usuario.value.email)}`)
+        // Si llegamos aquí, el cliente existe (status 200)
+        localStorage.setItem('usuario', JSON.stringify(cliente))
+        await Swal.fire({
+          icon: 'success',
+          title: 'Bienvenido',
+          text: 'Ha iniciado sesión correctamente.',
+          confirmButtonColor: '#3085d6'
+        })
         router.push('/')
-      } else {
-        await Swal.fire('No encontrado', 'No existe un usuario con ese email. Regístrese primero.', 'warning')
-        modoRegistro.value = true
+      } catch (error) {
+        if (error.response && error.response.status === 404) {
+          // Cliente no encontrado
+          await Swal.fire({
+            icon: 'warning',
+            title: 'No encontrado',
+            text: 'No existe un usuario con ese email. Regístrese primero.',
+            confirmButtonColor: '#3085d6'
+          })
+          modoRegistro.value = true
+        } else {
+          // Otro error (500, red, etc.)
+          throw error // Lo capturamos en el catch exterior
+        }
       }
     }
   } catch (error) {
     console.error(error)
-    await Swal.fire('Error', 'Hubo un problema con la solicitud al servidor', 'error')
+    let mensaje = 'Hubo un problema con la solicitud al servidor'
+    if (error.response) {
+      if (error.response.status === 400 && error.response.data.errors) {
+        const mensajes = error.response.data.errors.map(e => e.msg).join('<br>')
+        await Swal.fire({ icon: 'error', title: 'Error de validación', html: mensajes })
+        return
+      } else if (error.response.data && error.response.data.error) {
+        mensaje = `Error del servidor: ${error.response.data.error}`
+      } else {
+        mensaje = `Error ${error.response.status}: ${error.response.statusText}`
+      }
+    } else if (error.request) {
+      mensaje = 'No se pudo conectar con el servidor. Verifique su conexión.'
+    }
+    await Swal.fire({ icon: 'error', title: 'Error', text: mensaje })
   } finally {
     cargando.value = false
   }
@@ -126,6 +162,7 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped>
+/* Estilos idénticos a los originales, se mantienen sin cambios */
 .login-container {
   min-height: 100vh;
   display: flex;

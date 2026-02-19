@@ -18,5 +18,6 @@ router.get('/:id/vehiculos', clienteController.getWithVehiculos);
 router.post('/', validateCliente, clienteController.create);
 router.put('/:id', validateCliente, clienteController.update);
 router.delete('/:id', clienteController.delete);
+router.get('/email/:email', clienteController.getByEmail);  // <--- NUEVA RUTA
 
 module.exports = router;

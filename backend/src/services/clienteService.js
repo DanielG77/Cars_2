@@ -18,6 +18,11 @@ class ClienteService {
         return rows[0];
     }
 
+    async getByEmail(email) {
+        const { rows } = await db.query('SELECT * FROM clientes WHERE email = $1', [email]);
+        return rows[0];
+    }
+
     async getWithVehiculos(id) {
         const cliente = await this.getById(id);
         if (!cliente) return null;
