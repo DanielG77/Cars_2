@@ -1,28 +1,32 @@
 <template>
   <div class="login-container">
     <div class="login-card">
-      <h2>{{ modoRegistro ? 'Registro' : 'Iniciar sesión' }}</h2>
-      <form @submit.prevent="handleSubmit">
-        <div v-if="modoRegistro" class="form-group">
-          <label>DNI *</label>
-          <input v-model="usuario.dni" required placeholder="Ej: 12345678A">
-        </div>
-        <div v-if="modoRegistro" class="form-group">
-          <label>Nombre *</label>
-          <input v-model="usuario.nombre" required>
-        </div>
-        <div v-if="modoRegistro" class="form-group">
-          <label>Apellidos *</label>
-          <input v-model="usuario.apellidos" required>
-        </div>
-        <div class="form-group">
-          <label>Email *</label>
-          <input type="email" v-model="usuario.email" required>
-        </div>
-        <button type="submit" class="btn-primary" :disabled="cargando">
-          {{ cargando ? 'Procesando...' : (modoRegistro ? 'Registrarse' : 'Acceder') }}
-        </button>
-      </form>
+        <h2>{{ modoRegistro ? 'Registro' : 'Iniciar sesión' }}</h2>
+        <form @submit.prevent="handleSubmit">
+          <div v-if="modoRegistro" class="form-group">
+            <label>DNI</label>
+            <input v-model="usuario.dni" required placeholder="Ej: 12345678A">
+          </div>
+          <div v-if="modoRegistro" class="form-group">
+            <label>Nombre</label>
+            <input v-model="usuario.nombre" required>
+          </div>
+          <div v-if="modoRegistro" class="form-group">
+            <label>Apellidos</label>
+            <input v-model="usuario.apellidos" required>
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" v-model="usuario.email" required>
+          </div>
+          <div class="form-group">
+            <label>Contraseña (opcional)</label>
+            <input type="password" v-model="usuario.password">
+          </div>
+          <button type="submit" class="btn-primary" :disabled="cargando">
+            {{ cargando ? 'Procesando...' : (modoRegistro ? 'Registrarse' : 'Acceder') }}
+          </button>
+        </form>
       <p class="toggle-modo">
         {{ modoRegistro ? '¿Ya tienes cuenta?' : '¿No tienes cuenta?' }}
         <a href="#" @click.prevent="modoRegistro = !modoRegistro">
@@ -32,6 +36,7 @@
     </div>
   </div>
 </template>
+
 
 <script setup>
 import { ref, onMounted } from 'vue'
@@ -50,17 +55,56 @@ const usuario = ref({
   email: ''
 })
 
-// Al montar, comprobamos si hay vehículo pendiente
+// Función para vincular el vehículo pendiente (si existe) a un cliente
+const vincularVehiculoPendiente = async (clienteId) => {
+  const vehiculoPendiente = localStorage.getItem('vehiculoPendiente')
+  if (!vehiculoPendiente) return false
+
+  try {
+    const veh = JSON.parse(vehiculoPendiente)
+    const payload = {
+      ...veh,
+      cliente_id: parseInt(clienteId, 10) // Aseguramos que sea número entero
+    }
+    await api.post('/vehiculos', payload)
+    localStorage.removeItem('vehiculoPendiente')
+    await Swal.fire({
+      icon: 'success',
+      title: 'Vehículo vinculado',
+      text: 'Su vehículo ha sido vinculado a su cuenta correctamente.',
+      confirmButtonColor: '#3085d6'
+    })
+    return true
+  } catch (error) {
+    console.error('Error al vincular vehículo:', error)
+    let mensaje = 'No se pudo vincular el vehículo. Puede hacerlo más tarde desde su panel.'
+    if (error.response) {
+      if (error.response.status === 400 && error.response.data.errors) {
+        mensaje = 'Datos del vehículo no válidos. Revise la información.'
+      } else if (error.response.data && error.response.data.error) {
+        mensaje = `Error: ${error.response.data.error}`
+      }
+    }
+    await Swal.fire({
+      icon: 'warning',
+      title: 'Atención',
+      text: mensaje,
+      confirmButtonColor: '#3085d6'
+    })
+    return false
+  }
+}
+
+// Al montar, informamos si hay un vehículo pendiente (sin forzar modo registro)
 onMounted(() => {
   const pendiente = localStorage.getItem('vehiculoPendiente')
   if (pendiente) {
     Swal.fire({
       icon: 'info',
       title: 'Vehículo pendiente',
-      text: 'Por favor, regístrese para vincular su vehículo afectado.',
+      text: 'Por favor, inicie sesión o regístrese para vincular su vehículo afectado.',
       confirmButtonColor: '#3085d6'
     })
-    modoRegistro.value = true
   }
 })
 
@@ -68,7 +112,7 @@ const handleSubmit = async () => {
   cargando.value = true
   try {
     if (modoRegistro.value) {
-      // Registro: POST /clientes
+      // --- REGISTRO ---
       const payload = {
         dni: usuario.value.dni,
         nombre: usuario.value.nombre,
@@ -76,45 +120,30 @@ const handleSubmit = async () => {
         email: usuario.value.email
       }
       const created = await api.post('/clientes', payload)
-
-      // Guardar usuario en localStorage
       localStorage.setItem('usuario', JSON.stringify(created))
 
       // Vincular vehículo pendiente si existe
-      const vehiculoPendiente = localStorage.getItem('vehiculoPendiente')
-      if (vehiculoPendiente) {
-        const veh = JSON.parse(vehiculoPendiente)
-        try {
-          await api.post('/vehiculos', { ...veh, cliente_id: created.id })
-          localStorage.removeItem('vehiculoPendiente')
-          await Swal.fire({
-            icon: 'success',
-            title: 'Registro completado',
-            text: 'Su vehículo ha sido vinculado a su cuenta.',
-            confirmButtonColor: '#3085d6'
-          })
-          router.push('/')
-        } catch (e) {
-          console.error(e)
-          await Swal.fire('Error', 'No se pudo vincular el vehículo', 'error')
-        }
-      } else {
+      await vincularVehiculoPendiente(created.id)
+
+      // Mensaje de bienvenida (solo si no se mostró ya el de vinculación)
+      if (!localStorage.getItem('vehiculoPendiente')) { // Si ya no hay pendiente (porque se vinculó o nunca existió)
         await Swal.fire({
           icon: 'success',
           title: 'Registro completado',
           text: 'Bienvenido. Ya puede gestionar su remesa.',
           confirmButtonColor: '#3085d6'
         })
-        // Opcional: pasar a modo login o redirigir
-        modoRegistro.value = false
-        usuario.value = { dni: '', nombre: '', apellidos: '', email: '' }
       }
+      router.push('/')
     } else {
-      // Login: GET /clientes/email/:email
+      // --- LOGIN ---
       try {
         const cliente = await api.get(`/clientes/email/${encodeURIComponent(usuario.value.email)}`)
-        // Si llegamos aquí, el cliente existe (status 200)
         localStorage.setItem('usuario', JSON.stringify(cliente))
+
+        // Vincular vehículo pendiente si existe
+        await vincularVehiculoPendiente(cliente.id)
+
         await Swal.fire({
           icon: 'success',
           title: 'Bienvenido',
@@ -124,7 +153,7 @@ const handleSubmit = async () => {
         router.push('/')
       } catch (error) {
         if (error.response && error.response.status === 404) {
-          // Cliente no encontrado
+          // Email no registrado
           await Swal.fire({
             icon: 'warning',
             title: 'No encontrado',
@@ -133,8 +162,7 @@ const handleSubmit = async () => {
           })
           modoRegistro.value = true
         } else {
-          // Otro error (500, red, etc.)
-          throw error // Lo capturamos en el catch exterior
+          throw error // Otros errores los maneja el catch general
         }
       }
     }
