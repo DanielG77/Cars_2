@@ -1,8 +1,6 @@
 <template>
   <div class="container">
-    <!-- PANTALLA HOME -->
     <div v-if="mostrarHome" class="home-section">
-      <!-- Grid de marcas -->
       <div v-if="!selectedBrand" class="brand-selection">
         <h1 class="title">Selecciona tu marca</h1>
         <div class="brand-grid">
@@ -13,25 +11,37 @@
         </div>
       </div>
       
-      <!-- Detalle de la marca seleccionada -->
       <div v-else class="brand-details">
         <div class="details-card">
           <button class="btn-back" @click="clearSelection">← Volver</button>
           <img :src="getLogoUrl(selectedBrand)" :alt="selectedBrand" class="details-logo">
           <h2>{{ selectedBrand }}</h2>
           <div class="affected-info">
-            <h3>Años afectados:</h3>
+            <h3>Selecciona el año de tu vehículo:</h3>
             <div v-if="affectedYears.length" class="years-grid">
-              <span v-for="year in affectedYears" :key="year" class="year-badge">{{ year }}</span>
+              <span 
+                v-for="year in affectedYears" 
+                :key="year" 
+                class="year-badge"
+                :class="{ active: selectedYear === year }"
+                @click="selectedYear = year"
+              >
+                {{ year }}
+              </span>
             </div>
             <p v-else>No se han encontrado modelos afectados para esta marca.</p>
           </div>
-          <button @click="iniciarComprobacion" class="btn-primary">Comprobar mi vehículo</button>
+          <button 
+            @click="iniciarComprobacion" 
+            class="btn-primary" 
+            :disabled="!selectedYear"
+          >
+            {{ selectedYear ? 'Comprobar vehículo de ' + selectedYear : 'Selecciona un año' }}
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- FORMULARIO DE VEHÍCULO -->
     <div v-else class="form-section">
       <h2>Registra los datos de tu vehículo</h2>
       <form @submit.prevent="handleSubmit">
@@ -42,15 +52,15 @@
           </div>
           <div class="form-group">
             <label>Marca *</label>
-            <input v-model="vehiculo.marca" required placeholder="Ej: Renault">
+            <input v-model="vehiculo.marca" required disabled class="readonly-input" title="Seleccionado desde la página principal">
           </div>
           <div class="form-group">
             <label>Modelo *</label>
             <input v-model="vehiculo.modelo" required placeholder="Ej: Clio">
           </div>
           <div class="form-group">
-            <label>Año de matriculación</label>
-            <input v-model="vehiculo.anio_matriculacion" type="number" placeholder="Ej: 2020">
+            <label>Año de matriculación *</label>
+            <input v-model="vehiculo.anio_matriculacion" type="number" required disabled class="readonly-input" title="Seleccionado desde la página principal">
           </div>
           <div class="form-group">
             <label>Color</label>
@@ -80,24 +90,25 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
-// Importamos la lista de vehículos afectados (asegúrate de que la ruta sea correcta)
 import vehiculosAfectados from '@/data/afectados.json'
 import logos from '@/data/logos.json'
 
 const router = useRouter()
 
-// Estado de la marca seleccionada
 const selectedBrand = ref(null)
+const selectedYear = ref(null)
 const affectedYears = ref([])
 
 const selectBrand = (brand) => {
   selectedBrand.value = brand
   const info = vehiculosAfectados.find(v => v.marca.toLowerCase() === brand.toLowerCase())
   affectedYears.value = info ? info.anios : []
+  selectedYear.value = null // Reset year when brand changes
 }
 
 const clearSelection = () => {
   selectedBrand.value = null
+  selectedYear.value = null
   affectedYears.value = []
 }
 
@@ -108,13 +119,12 @@ const getLogoUrl = (brand) => {
 
 const iniciarComprobacion = () => {
   vehiculo.value.marca = selectedBrand.value
+  vehiculo.value.anio_matriculacion = selectedYear.value
   mostrarHome.value = false
 }
 
-// Estado de la vista
 const mostrarHome = ref(true)
 
-// Datos del vehículo
 const vehiculo = ref({
   matricula: '',
   marca: '',
@@ -127,13 +137,11 @@ const vehiculo = ref({
 
 const cargando = ref(false)
 
-// Función para normalizar texto (quita acentos y pasa a minúsculas)
 const normalizarTexto = (texto) => {
   if (!texto) return ''
   return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
 }
 
-// Comprobación local contra el JSON
 const comprobarVehiculo = (datos) => {
   const marcaNorm = normalizarTexto(datos.marca)
   const modeloNorm = normalizarTexto(datos.modelo)
@@ -149,7 +157,6 @@ const comprobarVehiculo = (datos) => {
   )
 }
 
-// Guardar vehículo en localStorage (simula el guardado para usuarios logueados)
 const guardarVehiculoLocal = (datos, afectado) => {
   try {
     // Recuperar vehículos existentes o inicializar array vacío
@@ -168,17 +175,14 @@ const guardarVehiculoLocal = (datos, afectado) => {
   }
 }
 
-// Volver al home sin guardar
 const volverAlHome = () => {
   vehiculo.value = { matricula: '', marca: '', modelo: '', anio_matriculacion: null, color: '', puertas: null, observaciones: '' }
   mostrarHome.value = true
 }
 
-// Envío del formulario
 const handleSubmit = async () => {
   cargando.value = true
   try {
-    // Comprobación síncrona (simulamos una pequeña pausa para mejorar UX)
     await new Promise(resolve => setTimeout(resolve, 500))
     const afectado = comprobarVehiculo(vehiculo.value)
 
@@ -186,7 +190,7 @@ const handleSubmit = async () => {
     const logged = usuarioRaw ? JSON.parse(usuarioRaw) : null
 
     if (logged) {
-      // Usuario logueado: guardamos en localStorage (simulando backend)
+      // Usuario logueado: guardamos en localStorage
       const guardado = guardarVehiculoLocal(vehiculo.value, afectado)
       if (guardado) {
         await Swal.fire({ 
@@ -200,30 +204,30 @@ const handleSubmit = async () => {
       }
       volverAlHome()
     } else {
-      if (afectado) {
-        // Guardar datos del vehículo en localStorage para vincular después del registro
-        localStorage.setItem('vehiculoPendiente', JSON.stringify(vehiculo.value))
+      // Si no está logueado, lo mandamos a registrarse DIRECTAMENTE si es un vehículo de la lista
+      // Guardar datos del vehículo en localStorage para vincular después del registro
+      localStorage.setItem('vehiculoPendiente', JSON.stringify(vehiculo.value))
 
+      if (afectado) {
         await Swal.fire({
           icon: 'info',
           title: 'Vehículo afectado',
-          text: 'Su vehículo está dentro de los afectados. Disculpe las molestias, le pediremos que registre un usuario para poder llevar a cabo la gestión.',
+          text: 'Su vehículo está dentro de los afectados. Para poder gestionar la incidencia, debe crear una cuenta.',
           confirmButtonColor: '#3085d6'
         })
-        router.push('/login')
       } else {
         await Swal.fire({
-          icon: 'success',
-          title: 'Vehículo no afectado',
-          text: 'Su vehículo no está en la lista de remesas. No necesita realizar ningún trámite.',
+          icon: 'info',
+          title: 'Registro necesario',
+          text: 'Aunque su vehículo no parece estar afectado por los años seleccionados, le pediremos que se registre para un análisis detallado.',
           confirmButtonColor: '#3085d6'
         })
-        volverAlHome()
       }
+      router.push('/login')
     }
   } catch (error) {
     console.error(error)
-    Swal.fire('Error', 'Hubo un problema al comprobar el vehículo', 'error')
+    Swal.fire('Error', 'Hubo un problema al procesar la solicitud', 'error')
   } finally {
     cargando.value = false
   }
@@ -350,10 +354,25 @@ const handleSubmit = async () => {
 .year-badge {
   background: #e6f0fa;
   color: #0077be;
-  padding: 5px 12px;
+  padding: 8px 16px;
   border-radius: 20px;
   font-weight: 600;
   font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.year-badge:hover {
+  background: #cce4f5;
+  transform: scale(1.05);
+}
+
+.year-badge.active {
+  background: #0077be;
+  color: white;
+  border-color: #005f9e;
+  box-shadow: 0 4px 10px rgba(0, 119, 190, 0.3);
 }
 
 .hero {
@@ -470,6 +489,17 @@ input, textarea {
 input:focus, textarea:focus {
   outline: none;
   border-color: #0077be;
+}
+
+.readonly-input {
+  background-color: #f0f4f8;
+  color: #555;
+  cursor: not-allowed;
+  border-color: #d1d9e0;
+}
+
+.readonly-input:focus {
+  border-color: #d1d9e0;
 }
 
 .form-actions {
