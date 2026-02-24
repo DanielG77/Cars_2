@@ -8,12 +8,12 @@ async function request(path, opts = {}) {
   if (!res.ok) {
     const text = await res.text()
     let err = text
-    try { err = JSON.parse(text) } catch(e){}
+    try { err = JSON.parse(text) } catch (e) { }
     throw err
   }
   // Try parse JSON, else return text
   const txt = await res.text()
-  try { return JSON.parse(txt) } catch(e) { return txt }
+  try { return JSON.parse(txt) } catch (e) { return txt }
 }
 
 export const api = {
