@@ -78,7 +78,14 @@
         <div class="form-grid">
           <div class="form-group">
             <label>Matrícula *</label>
-            <input v-model="vehiculo.matricula" required placeholder="Ej: 1234ABC">
+            <input
+              v-model="vehiculo.matricula"
+              required
+              placeholder="Ej: 1234ABC"
+              :class="{ 'input-error': errores.matricula }"
+              @input="errores.matricula = ''"
+            >
+            <span v-if="errores.matricula" class="error-msg">{{ errores.matricula }}</span>
           </div>
           <div class="form-group">
             <label>Marca *</label>
@@ -178,6 +185,23 @@ const vehiculo = ref({
 
 const cargando = ref(false)
 
+const errores = ref({ matricula: '' })
+
+// Matrícula española: formato nuevo (4 dígitos + 3 letras) o formato antiguo (letras + 4 dígitos + 2 letras)
+const REGEX_MATRICULA = /^(\d{4}[BCDFGHJKLMNPRSTUVWXYZ]{3}|[A-Z]{1,2}\d{4}[A-Z]{2})$/i
+
+const validarFormulario = () => {
+  errores.value.matricula = ''
+  const mat = vehiculo.value.matricula.trim().toUpperCase()
+  if (!REGEX_MATRICULA.test(mat)) {
+    errores.value.matricula = 'Matrícula no válida. Formato: 1234ABC (nuevo) o AB1234CD (antiguo).'
+    return false
+  }
+  // Normalizar a mayúsculas
+  vehiculo.value.matricula = mat
+  return true
+}
+
 const normalizarTexto = (texto) => {
   if (!texto) return ''
   return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
@@ -223,6 +247,7 @@ const volverAlHome = () => {
 }
 
 const handleSubmit = async () => {
+  if (!validarFormulario()) return
   cargando.value = true
   try {
     await new Promise(resolve => setTimeout(resolve, 500))
@@ -646,6 +671,18 @@ input:focus, textarea:focus {
   display: flex;
   justify-content: center;
   margin-top: 2rem;
+}
+
+.input-error {
+  border-color: #e53935 !important;
+  background-color: #fff5f5;
+}
+
+.error-msg {
+  color: #e53935;
+  font-size: 0.82rem;
+  margin-top: 4px;
+  display: block;
 }
 
 @media (max-width: 600px) {

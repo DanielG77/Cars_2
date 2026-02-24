@@ -5,7 +5,14 @@
         <form @submit.prevent="handleSubmit">
           <div v-if="modoRegistro" class="form-group">
             <label>DNI</label>
-            <input v-model="usuario.dni" required placeholder="Ej: 12345678A">
+            <input
+              v-model="usuario.dni"
+              required
+              placeholder="Ej: 12345678A"
+              :class="{ 'input-error': errores.dni }"
+              @input="errores.dni = ''"
+            >
+            <span v-if="errores.dni" class="error-msg">{{ errores.dni }}</span>
           </div>
           <div v-if="modoRegistro" class="form-group">
             <label>Nombre</label>
@@ -47,6 +54,24 @@ import { api } from '../services/api'
 const router = useRouter()
 const modoRegistro = ref(false)
 const cargando = ref(false)
+
+const errores = ref({ dni: '' })
+
+// DNI español: 8 dígitos + 1 letra
+const REGEX_DNI = /^\d{8}[A-Za-z]$/
+
+const validarRegistro = () => {
+  errores.value.dni = ''
+  if (modoRegistro.value) {
+    const dni = usuario.value.dni.trim().toUpperCase()
+    if (!REGEX_DNI.test(dni)) {
+      errores.value.dni = 'DNI no válido. Debe tener 8 dígitos seguidos de una letra. Ej: 12345678A'
+      return false
+    }
+    usuario.value.dni = dni
+  }
+  return true
+}
 
 const usuario = ref({
   dni: '',
@@ -109,6 +134,7 @@ onMounted(() => {
 })
 
 const handleSubmit = async () => {
+  if (!validarRegistro()) return
   cargando.value = true
   try {
     if (modoRegistro.value) {
@@ -279,5 +305,17 @@ const handleSubmit = async () => {
 
 .toggle-modo a:hover {
   text-decoration: underline;
+}
+
+.input-error {
+  border-color: #e53935 !important;
+  background-color: #fff5f5;
+}
+
+.error-msg {
+  color: #e53935;
+  font-size: 0.82rem;
+  margin-top: 4px;
+  display: block;
 }
 </style>

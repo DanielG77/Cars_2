@@ -14,8 +14,8 @@ FROM nginx:stable-alpine AS production-stage
 
 COPY --from=build-stage /app/dist /usr/share/nginx/html
 
-# Copiar configuración personalizada de Nginx si fuera necesario
-# COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Configuración personalizada de Nginx para SPA (Vue Router history mode)
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 
