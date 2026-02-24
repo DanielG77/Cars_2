@@ -1,7 +1,37 @@
 <template>
   <div class="container">
     <div v-if="mostrarHome" class="home-section">
-      <div v-if="!selectedBrand" class="brand-selection">
+
+      <!-- INTRO -->
+      <div v-if="showIntro && !selectedBrand" class="intro-section">
+        <div class="intro-card">
+          <div class="intro-badge">⚠️ Aviso importante</div>
+          <h1 class="intro-title">¿Tu vehículo está afectado por el cártel de coches?</h1>
+          <p class="intro-desc">
+            Entre 2006 y 2013, los principales fabricantes de automóviles en España fueron multados por
+            coordinar precios de venta al público, privando a millones de conductores de una competencia real.
+            Si compraste un vehículo nuevo durante ese periodo, es posible que hayas pagado de más.
+          </p>
+          <div class="intro-steps">
+            <div class="step">
+              <span class="step-num">1</span>
+              <span>Selecciona la <strong>marca</strong> de tu vehículo</span>
+            </div>
+            <div class="step">
+              <span class="step-num">2</span>
+              <span>Elige el <strong>año</strong> de matriculación</span>
+            </div>
+            <div class="step">
+              <span class="step-num">3</span>
+              <span>Comprueba si tu vehículo está <strong>afectado</strong> y regístralo</span>
+            </div>
+          </div>
+          <button class="btn-primary" @click="showIntro = false">Comprobar mi vehículo →</button>
+        </div>
+      </div>
+
+      <!-- SELECCIÓN DE MARCA -->
+      <div v-if="!showIntro && !selectedBrand" class="brand-selection">
         <h1 class="title">Selecciona tu marca</h1>
         <div class="brand-grid">
           <div v-for="(path, brand) in logos" :key="brand" class="brand-card" @click="selectBrand(brand)">
@@ -11,7 +41,7 @@
         </div>
       </div>
       
-      <div v-else class="brand-details">
+      <div v-if="!showIntro && selectedBrand" class="brand-details">
         <div class="details-card">
           <button class="btn-back" @click="clearSelection">← Volver</button>
           <img :src="getLogoUrl(selectedBrand)" :alt="selectedBrand" class="details-logo">
@@ -88,13 +118,23 @@
 
 <script setup>
 import { api } from '@/services/api'
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import Swal from 'sweetalert2'
 import vehiculosAfectados from '@/data/afectados.json'
 import logos from '@/data/logos.json'
 
 const router = useRouter()
+const route = useRoute()
+
+const showIntro = ref(true)
+
+onMounted(() => {
+  // Si viene desde perfil con ?directo=true, saltar intro y mostrar selección de marca
+  if (route.query.directo === 'true') {
+    showIntro.value = false
+  }
+})
 
 const selectedBrand = ref(null)
 const selectedYear = ref(null)
@@ -179,6 +219,7 @@ const guardarVehiculoLocal = (datos, afectado) => {
 const volverAlHome = () => {
   vehiculo.value = { matricula: '', marca: '', modelo: '', anio_matriculacion: null, color: '', puertas: null, observaciones: '' }
   mostrarHome.value = true
+  showIntro.value = true
 }
 
 const handleSubmit = async () => {
@@ -268,6 +309,84 @@ const handleSubmit = async () => {
   align-items: center;
   min-height: 100vh;
   padding: 2rem 0;
+}
+
+.intro-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem;
+  width: 100%;
+}
+
+.intro-card {
+  background: white;
+  border-radius: 30px;
+  padding: 3.5rem 3rem;
+  max-width: 700px;
+  width: 100%;
+  box-shadow: 0 20px 50px rgba(0, 119, 190, 0.15);
+  text-align: center;
+}
+
+.intro-badge {
+  display: inline-block;
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffc107;
+  border-radius: 20px;
+  padding: 6px 18px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+.intro-title {
+  font-size: 1.9rem;
+  color: #003b6f;
+  margin-bottom: 1.2rem;
+  line-height: 1.3;
+}
+
+.intro-desc {
+  color: #555;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  margin-bottom: 2rem;
+}
+
+.intro-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+  text-align: left;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: #f0f7ff;
+  border-radius: 12px;
+  padding: 0.9rem 1.2rem;
+  font-size: 1rem;
+  color: #333;
+}
+
+.step-num {
+  background: #0077be;
+  color: white;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+  flex-shrink: 0;
 }
 
 .brand-selection {

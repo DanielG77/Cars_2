@@ -33,7 +33,10 @@
         </li>
       </ul>
 
-      <button class="btn-primary" @click="logout">Cerrar sesión</button>
+      <div class="perfil-acciones">
+        <button class="btn-agregar" @click="router.push('/?directo=true')">+ Agregar vehículo</button>
+        <button class="btn-primary" @click="logout">Cerrar sesión</button>
+      </div>
     </div>
   </div>
 </template>
@@ -143,6 +146,13 @@ onMounted(async () => {
   box-shadow: 0 12px 30px rgba(0,0,0,0.06);
 }
 
+.perfil-acciones {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
 .btn-primary {
   background-color: #0077be;
   color: white;
@@ -151,10 +161,25 @@ onMounted(async () => {
   border: none;
   cursor: pointer;
   font-size: 1rem;
-  margin-top: 1rem;
 }
 .btn-primary:hover {
   background-color: #005fa3;
+}
+
+.btn-agregar {
+  background-color: #e6f0fa;
+  color: #0077be;
+  padding: 10px 20px;
+  border-radius: 20px;
+  border: 2px solid #0077be;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+.btn-agregar:hover {
+  background-color: #0077be;
+  color: white;
 }
 
 .mensaje-vacio {
