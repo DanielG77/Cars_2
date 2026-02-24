@@ -6,7 +6,9 @@
 			</div>
 			<nav class="nav">
 				<template v-if="usuario">
-					<router-link to="/perfil" class="nav-link">Perfil</router-link>
+					<!-- Si és admin mostra Dashboard -->
+					<router-link v-if="usuario.rol === 'admin'" to="/dashboard" class="nav-link">Dashboard</router-link>
+					<router-link v-else to="/perfil" class="nav-link">Perfil</router-link>
 					<button class="btn-logout" @click="logout">Cerrar sesión</button>
 				</template>
 				<template v-else>
@@ -42,7 +44,7 @@ const logout = () => {
 
 onMounted(() => {
 	loadUsuario()
-	// sync across tabs
+	// sincronització entre pestanyes
 	window.addEventListener('storage', (e) => {
 		if (e.key === 'usuario') loadUsuario()
 	})

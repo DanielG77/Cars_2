@@ -26,7 +26,7 @@
             <label>Email</label>
             <input type="email" v-model="usuario.email" required>
           </div>
-          <div class="form-group">
+          <div class="form-group" v-if="modoRegistro">
             <label>Contraseña</label>
             <input type="password" v-model="usuario.password">
           </div>
@@ -44,20 +44,18 @@
   </div>
 </template>
 
-
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
 import { api } from '../services/api'
+import adminsData from '../data/admin.json'
 
 const router = useRouter()
 const modoRegistro = ref(false)
 const cargando = ref(false)
-
 const errores = ref({ dni: '' })
 
-// DNI español: 8 dígitos + 1 letra
 const REGEX_DNI = /^\d{8}[A-Za-z]$/
 
 const validarRegistro = () => {
@@ -80,17 +78,12 @@ const usuario = ref({
   email: ''
 })
 
-// Función para vincular el vehículo pendiente (si existe) a un cliente
 const vincularVehiculoPendiente = async (clienteId) => {
   const vehiculoPendiente = localStorage.getItem('vehiculoPendiente')
   if (!vehiculoPendiente) return false
-
   try {
     const veh = JSON.parse(vehiculoPendiente)
-    const payload = {
-      ...veh,
-      cliente_id: parseInt(clienteId, 10) // Aseguramos que sea número entero
-    }
+    const payload = { ...veh, cliente_id: parseInt(clienteId, 10) }
     await api.post('/vehiculos', payload)
     localStorage.removeItem('vehiculoPendiente')
     await Swal.fire({
@@ -102,25 +95,16 @@ const vincularVehiculoPendiente = async (clienteId) => {
     return true
   } catch (error) {
     console.error('Error al vincular vehículo:', error)
-    let mensaje = 'No se pudo vincular el vehículo. Puede hacerlo más tarde desde su panel.'
-    if (error.response) {
-      if (error.response.status === 400 && error.response.data.errors) {
-        mensaje = 'Datos del vehículo no válidos. Revise la información.'
-      } else if (error.response.data && error.response.data.error) {
-        mensaje = `Error: ${error.response.data.error}`
-      }
-    }
     await Swal.fire({
       icon: 'warning',
       title: 'Atención',
-      text: mensaje,
+      text: 'No se pudo vincular el vehículo. Puede hacerlo más tarde desde su panel.',
       confirmButtonColor: '#3085d6'
     })
     return false
   }
 }
 
-// Al montar, informamos si hay un vehículo pendiente (sin forzar modo registro)
 onMounted(() => {
   const pendiente = localStorage.getItem('vehiculoPendiente')
   if (pendiente) {
@@ -147,29 +131,34 @@ const handleSubmit = async () => {
       }
       const created = await api.post('/clientes', payload)
       localStorage.setItem('usuario', JSON.stringify(created))
-
-      // Vincular vehículo pendiente si existe
       await vincularVehiculoPendiente(created.id)
-
-      // Mensaje de bienvenida (solo si no se mostró ya el de vinculación)
-      if (!localStorage.getItem('vehiculoPendiente')) { // Si ya no hay pendiente (porque se vinculó o nunca existió)
-        await Swal.fire({
-          icon: 'success',
-          title: 'Registro completado',
-          text: 'Bienvenido. Ya puede gestionar su remesa.',
-          confirmButtonColor: '#3085d6'
-        })
-      }
+      await Swal.fire({
+        icon: 'success',
+        title: 'Registro completado',
+        text: 'Bienvenido. Ya puede gestionar su remesa.',
+        confirmButtonColor: '#3085d6'
+      })
       router.push('/')
     } else {
-      // --- LOGIN ---
+      // --- LOGIN ADMIN POR EMAIL SOLO ---
+      const adminMatch = adminsData.find(a => a.email === usuario.value.email)
+      if (adminMatch) {
+        localStorage.setItem('usuario', JSON.stringify({ ...adminMatch, rol: 'admin' }))
+        await Swal.fire({
+          icon: 'success',
+          title: 'Bienvenido Admin',
+          text: 'Ha iniciado sesión correctamente como administrador.',
+          confirmButtonColor: '#3085d6'
+        })
+        router.push('/')
+        return
+      }
+
+      // --- LOGIN CLIENTE NORMAL ---
       try {
         const cliente = await api.get(`/clientes/email/${encodeURIComponent(usuario.value.email)}`)
         localStorage.setItem('usuario', JSON.stringify(cliente))
-
-        // Vincular vehículo pendiente si existe
         await vincularVehiculoPendiente(cliente.id)
-
         await Swal.fire({
           icon: 'success',
           title: 'Bienvenido',
@@ -179,7 +168,6 @@ const handleSubmit = async () => {
         router.push('/')
       } catch (error) {
         if (error.response && error.response.status === 404) {
-          // Email no registrado
           await Swal.fire({
             icon: 'warning',
             title: 'No encontrado',
@@ -188,27 +176,13 @@ const handleSubmit = async () => {
           })
           modoRegistro.value = true
         } else {
-          throw error // Otros errores los maneja el catch general
+          throw error
         }
       }
     }
   } catch (error) {
     console.error(error)
-    let mensaje = 'Hubo un problema con la solicitud al servidor'
-    if (error.response) {
-      if (error.response.status === 400 && error.response.data.errors) {
-        const mensajes = error.response.data.errors.map(e => e.msg).join('<br>')
-        await Swal.fire({ icon: 'error', title: 'Error de validación', html: mensajes })
-        return
-      } else if (error.response.data && error.response.data.error) {
-        mensaje = `Error del servidor: ${error.response.data.error}`
-      } else {
-        mensaje = `Error ${error.response.status}: ${error.response.statusText}`
-      }
-    } else if (error.request) {
-      mensaje = 'No se pudo conectar con el servidor. Verifique su conexión.'
-    }
-    await Swal.fire({ icon: 'error', title: 'Error', text: mensaje })
+    await Swal.fire({ icon: 'error', title: 'Error', text: 'Hubo un problema con la solicitud al servidor.' })
   } finally {
     cargando.value = false
   }
@@ -216,7 +190,6 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped>
-/* Estilos idénticos a los originales, se mantienen sin cambios */
 .login-container {
   min-height: 100vh;
   display: flex;

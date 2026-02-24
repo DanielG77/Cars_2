@@ -1,0 +1,10 @@
+[
+    {
+        "id": 1,
+        "dni": "00000000A",
+        "nombre": "Admin",
+        "apellidos": "Principal",
+        "email": "admin@tudominio.com",
+        "password": "Admin123!"
+    }
+]
