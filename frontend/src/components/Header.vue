@@ -20,10 +20,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
+const route = useRoute()
 const usuario = ref(null)
 
 const loadUsuario = () => {
@@ -41,6 +42,11 @@ const logout = () => {
 	loadUsuario()
 	router.push('/')
 }
+
+// Recargar usuario cada vez que cambia la ruta (cubre login, register, logout)
+watch(() => route.path, () => {
+	loadUsuario()
+})
 
 onMounted(() => {
 	loadUsuario()
