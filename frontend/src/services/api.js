@@ -20,6 +20,7 @@ export const api = {
   get: (p) => request(p, { method: 'GET' }),
   post: (p, body) => request(p, { method: 'POST', body: JSON.stringify(body) }),
   put: (p, body) => request(p, { method: 'PUT', body: JSON.stringify(body) }),
+  patch: (p, body) => request(p, { method: 'PATCH', body: JSON.stringify(body) }),
   del: (p) => request(p, { method: 'DELETE' })
 }
 

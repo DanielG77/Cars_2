@@ -23,15 +23,24 @@
       </div>
 
       <h3>Incidencias</h3>
-      <ul v-if="incidencias.length === 0">
-        <li class="mensaje-vacio">No hay incidencias registradas.</li>
-      </ul>
-      <ul v-else>
-        <li v-for="i in incidencias" :key="i.id">
-          {{ i.titulo }} — {{ i.descripcion || '' }}
-          <span v-if="i.resuelta" class="resuelta">(Resuelta)</span>
-        </li>
-      </ul>
+      <div v-if="incidencias.length === 0" class="mensaje-vacio">
+        No hay incidencias registradas.
+      </div>
+      <div v-else class="incidencias-lista">
+        <div
+          v-for="i in incidencias"
+          :key="i.id"
+          class="incidencia-card"
+          :class="tipoIncidencia(i.titulo)"
+        >
+          <div class="incidencia-header">
+            <span class="incidencia-icono">{{ iconoIncidencia(i.titulo) }}</span>
+            <strong class="incidencia-titulo">{{ i.titulo }}</strong>
+          </div>
+          <p class="incidencia-desc">{{ i.descripcion || '' }}</p>
+          <div class="incidencia-fecha">{{ formatFecha(i.fecha_creacion) }}</div>
+        </div>
+      </div>
 
       <div class="perfil-acciones">
         <button class="btn-agregar" @click="router.push('/?directo=true')">+ Agregar vehículo</button>
@@ -45,6 +54,25 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { api } from '../services/api'
+
+const tipoIncidencia = (titulo = '') => {
+  const t = titulo.toLowerCase()
+  if (t.includes('aceptado')) return 'inc-aceptada'
+  if (t.includes('rechazado')) return 'inc-rechazada'
+  return 'inc-pendiente'
+}
+
+const iconoIncidencia = (titulo = '') => {
+  const t = titulo.toLowerCase()
+  if (t.includes('aceptado')) return '✔'
+  if (t.includes('rechazado')) return '✖'
+  return '⏳'
+}
+
+const formatFecha = (fecha) => {
+  if (!fecha) return ''
+  return new Date(fecha).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+}
 
 const router = useRouter()
 const usuario = ref(null)
@@ -245,5 +273,75 @@ ul li {
   color: green;
   font-weight: bold;
   margin-left: 0.5rem;
+}
+
+/* --- Incidencias --- */
+.incidencias-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.incidencia-card {
+  border-radius: 12px;
+  padding: 1.1rem 1.4rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.incidencia-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+/* Aceptada — verde */
+.inc-aceptada {
+  background-color: #1b5e20;
+  border-left: 5px solid #4caf50;
+  color: #e8f5e9;
+}
+.inc-aceptada .incidencia-titulo { color: #a5d6a7; }
+.inc-aceptada .incidencia-fecha  { color: #81c784; }
+
+/* Rechazada — negro */
+.inc-rechazada {
+  background-color: #111;
+  border-left: 5px solid #555;
+  color: #e0e0e0;
+}
+.inc-rechazada .incidencia-titulo { color: #bbb; }
+.inc-rechazada .incidencia-fecha  { color: #777; }
+
+/* Pendiente / revisión — azul oscuro */
+.inc-pendiente {
+  background-color: #e3f2fd;
+  border-left: 5px solid #1565c0;
+  color: #0d47a1;
+}
+.inc-pendiente .incidencia-titulo { color: #0d47a1; }
+.inc-pendiente .incidencia-fecha  { color: #1565c0; }
+
+.incidencia-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+.incidencia-icono {
+  font-size: 1.1rem;
+}
+.incidencia-titulo {
+  font-size: 1rem;
+  font-weight: 700;
+}
+.incidencia-desc {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  opacity: 0.9;
+  line-height: 1.5;
+}
+.incidencia-fecha {
+  font-size: 0.78rem;
+  text-align: right;
+  opacity: 0.8;
 }
 </style>

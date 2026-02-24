@@ -5,6 +5,13 @@ EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
 
+-- Create enum for vehicle status
+DO $$ BEGIN
+    CREATE TYPE estado_vehiculo AS ENUM ('accepted', 'pending', 'rejected');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
 -- Table Clientes
 CREATE TABLE IF NOT EXISTS clientes (
     id SERIAL PRIMARY KEY,
@@ -27,7 +34,8 @@ CREATE TABLE IF NOT EXISTS vehiculos (
     anio_matriculacion INTEGER,
     color VARCHAR(30),
     puertas INTEGER,
-    observaciones TEXT
+    observaciones TEXT,
+    status estado_vehiculo DEFAULT 'pending'
 );
 
 -- Table Incidencias (NUEVA: Para cumplir con el punto 3.3 Gestionar incidencias)

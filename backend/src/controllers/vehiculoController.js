@@ -4,7 +4,8 @@ const { validationResult } = require('express-validator');
 class VehiculoController {
     async getAll(req, res) {
         try {
-            const vehiculos = await vehiculoService.getAll();
+            const { status } = req.query;
+            const vehiculos = await vehiculoService.getAll(status);
             res.json(vehiculos);
         } catch (error) {
             res.status(500).json({ error: error.message });
@@ -51,6 +52,20 @@ class VehiculoController {
             const eliminado = await vehiculoService.delete(req.params.id);
             if (!eliminado) return res.status(404).json({ error: 'Vehículo no encontrado' });
             res.status(204).send();
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    async patchStatus(req, res) {
+        const { status } = req.body;
+        if (!['accepted', 'pending', 'rejected'].includes(status)) {
+            return res.status(400).json({ error: 'Status no válido. Use: accepted, pending, rejected' });
+        }
+        try {
+            const updated = await vehiculoService.patchStatus(req.params.id, status);
+            if (!updated) return res.status(404).json({ error: 'Vehículo no encontrado' });
+            res.json(updated);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
