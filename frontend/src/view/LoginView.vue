@@ -20,7 +20,7 @@
             <input type="email" v-model="usuario.email" required>
           </div>
           <div class="form-group">
-            <label>Contraseña (opcional)</label>
+            <label>Contraseña</label>
             <input type="password" v-model="usuario.password">
           </div>
           <button type="submit" class="btn-primary" :disabled="cargando">

@@ -109,18 +109,23 @@ onMounted(async () => {
     router.push('/login')
     return
   }
+
   try {
     const id = usuario.value.id
 
-    // Obtener vehículos
-    const responseVehiculos = await api.get(`/vehiculos/${id}`)
+    // Obtener vehículos desde la ruta correcta
+    const responseVehiculos = await api.get(`/clientes/${id}/vehiculos`)
     console.log('Respuesta cruda de vehículos:', responseVehiculos)
-    vehiculos.value = normalizarVehiculos(responseVehiculos)
+
+    // Extraer data y normalizar
+    const dataVehiculos = responseVehiculos.data ?? responseVehiculos
+    vehiculos.value = normalizarVehiculos(dataVehiculos)
     console.log('Vehículos normalizados:', vehiculos.value)
 
-    // Obtener incidencias (asumimos que es un array directamente)
+    // Obtener incidencias
     const responseIncidencias = await api.get(`/incidencias/cliente/${id}`)
-    incidencias.value = Array.isArray(responseIncidencias) ? responseIncidencias : []
+    const dataIncidencias = responseIncidencias.data ?? responseIncidencias
+    incidencias.value = Array.isArray(dataIncidencias) ? dataIncidencias : []
     console.log('Incidencias:', incidencias.value)
   } catch (e) {
     console.error('Error al cargar datos:', e)

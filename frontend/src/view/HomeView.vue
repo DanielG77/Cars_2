@@ -87,6 +87,7 @@
 </template>
 
 <script setup>
+import { api } from '@/services/api'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
@@ -190,19 +191,39 @@ const handleSubmit = async () => {
     const logged = usuarioRaw ? JSON.parse(usuarioRaw) : null
 
     if (logged) {
-      // Usuario logueado: guardamos en localStorage
-      const guardado = guardarVehiculoLocal(vehiculo.value, afectado)
-      if (guardado) {
-        await Swal.fire({ 
-          icon: 'success', 
-          title: 'Vehículo guardado', 
-          text: 'Su vehículo ha sido registrado en su cuenta.', 
-          confirmButtonColor: '#3085d6' 
+      try {
+        const payload = {
+          ...vehiculo.value,
+          cliente_id: parseInt(logged.id, 10)
+        }
+
+        await api.post('/vehiculos', payload)
+
+        await Swal.fire({
+          icon: 'success',
+          title: 'Vehículo registrado',
+          text: 'El vehículo ha sido guardado en su cuenta correctamente.',
+          confirmButtonColor: '#3085d6'
         })
-      } else {
-        await Swal.fire('Error', 'No se pudo guardar el vehículo', 'error')
+
+        volverAlHome()
+      } catch (error) {
+        console.error('Error al guardar vehículo:', error)
+
+        let mensaje = 'No se pudo guardar el vehículo.'
+        if (error.response?.data?.error) {
+          mensaje = `Error: ${error.response.data.error}`
+        }
+
+        await Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: mensaje,
+          confirmButtonColor: '#d33'
+        })
       }
-      volverAlHome()
+
+      return
     } else {
       // Si no está logueado, lo mandamos a registrarse DIRECTAMENTE si es un vehículo de la lista
       // Guardar datos del vehículo en localStorage para vincular después del registro
