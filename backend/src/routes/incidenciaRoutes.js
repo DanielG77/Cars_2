@@ -14,6 +14,7 @@ router.get('/', incidenciaController.getAll);
 router.get('/cliente/:clienteId', incidenciaController.getByCliente);
 router.post('/', validateIncidencia, incidenciaController.create);
 router.put('/:id', incidenciaController.update);
+router.put('/:id/status', incidenciaController.updateStatus);
 router.delete('/:id', incidenciaController.delete);
 
 module.exports = router;

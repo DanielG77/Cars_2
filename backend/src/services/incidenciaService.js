@@ -36,6 +36,21 @@ class IncidenciaService {
         const { rowCount } = await db.query('DELETE FROM incidencias WHERE id = $1', [id]);
         return rowCount > 0;
     }
+
+    async getById(id) {
+        const { rows } = await db.query('SELECT * FROM incidencias WHERE id = $1', [id]);
+        return rows[0];
+    }
+
+    async updateStatus(id, status) {
+        const query = `
+            UPDATE incidencias 
+            SET resuelta = $1
+            WHERE id = $2
+            RETURNING *`;
+        const { rows } = await db.query(query, [status === 'accepted', id]);
+        return rows[0];
+    }
 }
 
 module.exports = new IncidenciaService();

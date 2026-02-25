@@ -26,9 +26,13 @@
             <label>Email</label>
             <input type="email" v-model="usuario.email" required>
           </div>
-          <div class="form-group" v-if="modoRegistro">
+          <div class="form-group">
             <label>Contraseña</label>
-            <input type="password" v-model="usuario.password">
+            <input 
+              type="password" 
+              v-model="usuario.password"
+              placeholder="Introduzca su contraseña"
+            >
           </div>
           <button type="submit" class="btn-primary" :disabled="cargando">
             {{ cargando ? 'Procesando...' : (modoRegistro ? 'Registrarse' : 'Acceder') }}

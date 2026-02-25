@@ -51,6 +51,36 @@ class IncidenciaController {
             res.status(500).json({ error: error.message });
         }
     }
+
+    async updateStatus(req, res) {
+        const { status, adminEmail } = req.body;
+
+        if (!['accepted', 'rejected'].includes(status)) {
+            return res.status(400).json({ error: 'Estado inválido. Use "accepted" o "rejected"' });
+        }
+
+        try {
+            // Obtener incidencia actual
+            const incidencia = await incidenciaService.getById(req.params.id);
+            if (!incidencia) {
+                return res.status(404).json({ error: 'Incidencia no encontrada' });
+            }
+
+            // Actualizar estado
+            const incidenciaActualizada = await incidenciaService.updateStatus(req.params.id, status);
+
+            // Enviar correo
+            const mailService = require('../services/mailService');
+            await mailService.sendIncidenciaStatusEmail(incidenciaActualizada, status, adminEmail);
+
+            res.json({
+                message: 'Incidencia actualizada y correo enviado',
+                incidencia: incidenciaActualizada
+            });
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
 }
 
 module.exports = new IncidenciaController();

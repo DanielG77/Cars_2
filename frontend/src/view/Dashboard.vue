@@ -22,6 +22,31 @@
         <p>{{ ultimoRegistroFormateado }}</p>
       </div>
     </div>
+    <!-- Sección de Incidencias Pendientes
+    <div class="incidencias-section">
+      <h2>Incidencias Pendientes para Admin</h2>
+      <div v-if="cargandoIncidencias" class="loading">Cargando incidencias...</div>
+      <div v-else-if="incidencias.length === 0" class="vacio">No hay incidencias pendientes</div>
+      <div v-else class="incidencias-grid">
+        <div v-for="inc in incidencias" :key="inc.id" class="incidencia-card">
+          <h4>{{ inc.titulo }}</h4>
+          <p><strong>ID:</strong> {{ inc.id }}</p>
+          <p><strong>Cliente:</strong> {{ inc.cliente_id }}</p>
+          <p><strong>Descripción:</strong> {{ inc.descripcion }}</p>
+          <div class="button-group">
+            <button @click="handleIncidenciaStatus(inc.id, 'accepted')" class="btn btn-accept" :disabled="procesandoIncidencia === inc.id">
+              {{ procesandoIncidencia === inc.id ? 'Procesando...' : '✓ Aceptar' }}
+            </button>
+            <button @click="handleIncidenciaStatus(inc.id, 'rejected')" class="btn btn-reject" :disabled="procesandoIncidencia === inc.id">
+              {{ procesandoIncidencia === inc.id ? 'Procesando...' : '✗ Rechazar' }}
+            </button>
+          </div>
+          <div v-if="feedbackIncidencia[inc.id]" :class="['status-message', feedbackIncidencia[inc.id].type]">
+            {{ feedbackIncidencia[inc.id].message }}
+          </div>
+        </div>
+      </div>
+    </div> -->
 
     <!-- Gestión de vehículos -->
     <div class="table-section">
@@ -105,10 +130,15 @@ import { api } from '../services/api'
 
 const cargando = ref(true)
 const cargandoVehiculos = ref(false)
+const cargandoIncidencias = ref(false)
 const stats = ref({})
 const vehiculos = ref([])
+const incidencias = ref([])
 const filtroActivo = ref('pending')
 const procesando = ref(null)
+const procesandoIncidencia = ref(null)
+const feedbackIncidencia = ref({})
+const adminEmail = ref('admin@cartel-coches.local')
 
 const filtros = [
   { label: '⏳ Pendientes', value: 'pending' },
@@ -164,11 +194,19 @@ const cambiarStatus = async (vehiculo, nuevoStatus) => {
     // Crear incidencia notificando al cliente
     const { titulo, descripcion } = mensajesIncidencia[nuevoStatus](vehiculo)
     try {
-      await api.post('/incidencias', {
-        cliente_id: vehiculo.cliente_id,
-        titulo,
-        descripcion
-      })
+     // 1️⃣ Crear incidencia
+    const nuevaIncidencia = await api.post('/incidencias', {
+      cliente_id: vehiculo.cliente_id,
+      titulo,
+      descripcion
+    })
+
+    // 2️⃣ Enviar mail automáticamente con el estado real
+    await api.put(`/incidencias/${nuevaIncidencia.id}/status`, {
+      status: nuevoStatus,
+      adminEmail: adminEmail.value
+    })
+
     } catch (eInc) {
       // Si ya existe esa incidencia (UNIQUE constraint) la ignoramos silenciosamente
       console.warn('Incidencia ya existente o error al crearla:', eInc)
@@ -192,10 +230,53 @@ const cambiarStatus = async (vehiculo, nuevoStatus) => {
   }
 }
 
+const cargarIncidencias = async () => {
+  cargandoIncidencias.value = true
+  try {
+    incidencias.value = await api.get('/incidencias')
+  } catch (e) {
+    console.error('Error al cargar incidencias:', e)
+    incidencias.value = []
+  } finally {
+    cargandoIncidencias.value = false
+  }
+}
+
+const handleIncidenciaStatus = async (incidenciaId, status) => {
+  procesandoIncidencia.value = incidenciaId
+  feedbackIncidencia.value[incidenciaId] = null
+
+  try {
+    const response = await api.put(`/incidencias/${incidenciaId}/status`, {
+      status,
+      adminEmail: adminEmail.value
+    })
+
+    const statusText = status === 'accepted' ? 'ACEPTADA' : 'RECHAZADA'
+    
+    feedbackIncidencia.value[incidenciaId] = {
+      type: 'success',
+      message: `✓ Incidencia ${statusText}. Correo enviado a ${adminEmail.value}`
+    }
+
+    // Recargar incidencias después de 1.5 segundos
+    setTimeout(cargarIncidencias, 1500)
+  } catch (error) {
+    feedbackIncidencia.value[incidenciaId] = {
+      type: 'error',
+      message: `❌ Error: ${error.message}`
+    }
+    console.error('Error:', error)
+  } finally {
+    procesandoIncidencia.value = null
+  }
+}
+
 onMounted(async () => {
   try {
     stats.value = await api.get('/stats')
     await cargarVehiculos('pending')
+    await cargarIncidencias()
   } catch (e) {
     console.error('Error al cargar stats:', e)
   } finally {
