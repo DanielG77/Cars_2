@@ -26,11 +26,33 @@
             <label>Email</label>
             <input type="email" v-model="usuario.email" required>
           </div>
-          <div class="form-group">
+          <div v-if="modoRegistro" class="form-group">
             <label>Contraseña</label>
             <input 
               type="password" 
               v-model="usuario.password"
+              required
+              placeholder="Crea una contraseña"
+            >
+          </div>
+          <div v-if="modoRegistro" class="form-group">
+            <label>Confirmar contraseña</label>
+            <input 
+              type="password" 
+              v-model="usuario.passwordConfirm"
+              required
+              placeholder="Repite la contraseña"
+              :class="{ 'input-error': errores.password }"
+              @input="errores.password = ''"
+            >
+            <span v-if="errores.password" class="error-msg">{{ errores.password }}</span>
+          </div>
+          <div v-if="!modoRegistro" class="form-group">
+            <label>Contraseña</label>
+            <input 
+              type="password" 
+              v-model="usuario.password"
+              required
               placeholder="Introduzca su contraseña"
             >
           </div>
@@ -58,12 +80,13 @@ import adminsData from '../data/admin.json'
 const router = useRouter()
 const modoRegistro = ref(false)
 const cargando = ref(false)
-const errores = ref({ dni: '' })
+const errores = ref({ dni: '', password: '' })
 
 const REGEX_DNI = /^\d{8}[A-Za-z]$/
 
 const validarRegistro = () => {
   errores.value.dni = ''
+  errores.value.password = ''
   if (modoRegistro.value) {
     const dni = usuario.value.dni.trim().toUpperCase()
     if (!REGEX_DNI.test(dni)) {
@@ -71,6 +94,14 @@ const validarRegistro = () => {
       return false
     }
     usuario.value.dni = dni
+    if (!usuario.value.password || usuario.value.password.length < 6) {
+      errores.value.password = 'La contraseña debe tener al menos 6 caracteres.'
+      return false
+    }
+    if (usuario.value.password !== usuario.value.passwordConfirm) {
+      errores.value.password = 'Las contraseñas no coinciden.'
+      return false
+    }
   }
   return true
 }
@@ -79,7 +110,9 @@ const usuario = ref({
   dni: '',
   nombre: '',
   apellidos: '',
-  email: ''
+  email: '',
+  password: '',
+  passwordConfirm: ''
 })
 
 const vincularVehiculoPendiente = async (clienteId) => {
@@ -131,7 +164,8 @@ const handleSubmit = async () => {
         dni: usuario.value.dni,
         nombre: usuario.value.nombre,
         apellidos: usuario.value.apellidos,
-        email: usuario.value.email
+        email: usuario.value.email,
+        password: usuario.value.password
       }
       const created = await api.post('/clientes', payload)
       localStorage.setItem('usuario', JSON.stringify(created))
@@ -144,9 +178,19 @@ const handleSubmit = async () => {
       })
       router.push('/')
     } else {
-      // --- LOGIN ADMIN POR EMAIL SOLO ---
+      // --- LOGIN ADMIN POR EMAIL Y CONTRASEÑA ---
       const adminMatch = adminsData.find(a => a.email === usuario.value.email)
       if (adminMatch) {
+        if (adminMatch.password !== usuario.value.password) {
+          await Swal.fire({
+            icon: 'error',
+            title: 'Contraseña incorrecta',
+            text: 'La contraseña introducida no es correcta.',
+            confirmButtonColor: '#d33'
+          })
+          cargando.value = false
+          return
+        }
         localStorage.setItem('usuario', JSON.stringify({ ...adminMatch, rol: 'admin' }))
         await Swal.fire({
           icon: 'success',
@@ -160,7 +204,10 @@ const handleSubmit = async () => {
 
       // --- LOGIN CLIENTE NORMAL ---
       try {
-        const cliente = await api.get(`/clientes/email/${encodeURIComponent(usuario.value.email)}`)
+        const cliente = await api.post('/clientes/login', {
+          email: usuario.value.email,
+          password: usuario.value.password
+        })
         localStorage.setItem('usuario', JSON.stringify(cliente))
         await vincularVehiculoPendiente(cliente.id)
         await Swal.fire({
@@ -171,7 +218,14 @@ const handleSubmit = async () => {
         })
         router.push('/')
       } catch (error) {
-        if (error.response && error.response.status === 404) {
+        if (error.response && error.response.status === 401) {
+          await Swal.fire({
+            icon: 'error',
+            title: 'Credenciales incorrectas',
+            text: 'Email o contraseña incorrectos.',
+            confirmButtonColor: '#d33'
+          })
+        } else if (error.response && error.response.status === 404) {
           await Swal.fire({
             icon: 'warning',
             title: 'No encontrado',

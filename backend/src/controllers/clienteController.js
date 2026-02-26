@@ -78,6 +78,23 @@ class ClienteController {
             res.status(500).json({ error: error.message });
         }
     }
+
+    async login(req, res) {
+        try {
+            const { email, password } = req.body;
+            if (!email || !password) {
+                return res.status(400).json({ error: 'Email y contraseña son obligatorios' });
+            }
+            const cliente = await clienteService.login(email, password);
+            if (!cliente) {
+                return res.status(401).json({ error: 'Email o contraseña incorrectos' });
+            }
+            const { password: _, ...clienteSinPassword } = cliente;
+            res.json(clienteSinPassword);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
 }
 
 module.exports = new ClienteController();

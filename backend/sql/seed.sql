@@ -1,9 +1,9 @@
 -- Insert seed clients
-INSERT INTO clientes (dni, nombre, apellidos, telefono, email, estado) VALUES
-('12345678A', 'Juan', 'Pérez García', '600111222', 'juan.perez@email.com', 'en_tramite'),
-('87654321B', 'María', 'López Sánchez', '611222333', 'maria.lopez@email.com', 'pendiente'),
-('11223344C', 'Carlos', 'Rodríguez Martínez', '622333444', 'carlos.rod@email.com', 'resuelto'),
-('55667788D', 'Ana', 'Gómez Ruiz', '633444555', 'ana.gomez@email.com', 'rechazado')
+INSERT INTO clientes (dni, nombre, apellidos, telefono, email, password, estado) VALUES
+('12345678A', 'Juan', 'Pérez García', '600111222', 'juan.perez@email.com', 'juan.perez', 'en_tramite'),
+('87654321B', 'María', 'López Sánchez', '611222333', 'maria.lopez@email.com', 'maria.lopez', 'pendiente'),
+('11223344C', 'Carlos', 'Rodríguez Martínez', '622333444', 'carlos.rod@email.com', 'carlos.rod', 'resuelto'),
+('55667788D', 'Ana', 'Gómez Ruiz', '633444555', 'ana.gomez@email.com', 'ana.gomez', 'rechazado')
 ON CONFLICT (dni) DO NOTHING;
 
 -- Insert seed vehicles

@@ -32,13 +32,21 @@ class ClienteService {
     }
 
     async create(data) {
-        const { dni, nombre, apellidos, telefono, email, estado } = data;
+        const { dni, nombre, apellidos, telefono, email, password, estado } = data;
         const query = `
-      INSERT INTO clientes (dni, nombre, apellidos, telefono, email, estado)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      INSERT INTO clientes (dni, nombre, apellidos, telefono, email, password, estado)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *`;
-        const { rows } = await db.query(query, [dni, nombre, apellidos, telefono, email, estado || 'pendiente']);
+        const { rows } = await db.query(query, [dni, nombre, apellidos, telefono, email, password || null, estado || 'pendiente']);
         return rows[0];
+    }
+
+    async login(email, password) {
+        const { rows } = await db.query('SELECT * FROM clientes WHERE email = $1', [email]);
+        const cliente = rows[0];
+        if (!cliente) return null;
+        if (cliente.password !== password) return null;
+        return cliente;
     }
 
     async update(id, data) {

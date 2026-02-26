@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS clientes (
     apellidos VARCHAR(100) NOT NULL,
     telefono VARCHAR(20),
     email VARCHAR(100),
+    password VARCHAR(255),
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     estado estado_resolucion DEFAULT 'pendiente'
 );
